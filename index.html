@@ -1,0 +1,1465 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <title>📊 数据看板</title>
+    <style>
+        /* ---------- 全局重置 & 干净白底 ---------- */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+        }
+
+        body {
+            background: #f8fafc;
+            min-height: 100vh;
+            padding: 16px 12px 30px;
+            color: #1e293b;
+        }
+
+        .dashboard {
+            max-width: 480px;
+            margin: 0 auto;
+        }
+
+        /* ---------- 头部 ---------- */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 4px 12px;
+            margin-bottom: 8px;
+            border-bottom: 1px solid #e9edf4;
+        }
+
+        .header h1 {
+            font-size: 20px;
+            font-weight: 700;
+            color: #0f172a;
+            letter-spacing: 0.3px;
+        }
+
+        .header .badge {
+            background: #f1f5f9;
+            padding: 4px 12px;
+            border-radius: 30px;
+            font-size: 11px;
+            color: #475569;
+            border: 1px solid #e2e8f0;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .badge .dot {
+            display: inline-block;
+            width: 7px;
+            height: 7px;
+            background: #3b82f6;
+            border-radius: 50%;
+            animation: pulse-dot 1.8s ease-in-out infinite;
+        }
+
+        @keyframes pulse-dot {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.4; transform: scale(0.7); }
+        }
+
+        /* ---------- 游戏名称选项卡 + 添加按钮 + 刷新按钮 ---------- */
+        .game-tabs-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 0 12px;
+            margin-bottom: 6px;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            /* 滚动条样式 - 可见且美观 */
+            scrollbar-width: thin;
+            scrollbar-color: #c1c9d6 #e9edf4;
+        }
+
+        /* WebKit 滚动条样式 */
+        .game-tabs-wrapper::-webkit-scrollbar {
+            height: 4px;
+        }
+
+        .game-tabs-wrapper::-webkit-scrollbar-track {
+            background: #e9edf4;
+            border-radius: 4px;
+        }
+
+        .game-tabs-wrapper::-webkit-scrollbar-thumb {
+            background: #c1c9d6;
+            border-radius: 4px;
+        }
+
+        .game-tabs-wrapper::-webkit-scrollbar-thumb:hover {
+            background: #a0aab8;
+        }
+
+        .game-tabs {
+            display: flex;
+            gap: 6px;
+            flex: 0 0 auto;
+        }
+
+        .game-tab {
+            flex: 0 0 auto;
+            padding: 6px 18px;
+            border-radius: 30px;
+            font-size: 13px;
+            font-weight: 500;
+            background: #f1f5f9;
+            color: #475569;
+            border: 1px solid transparent;
+            transition: all 0.2s;
+            white-space: nowrap;
+            cursor: default;
+        }
+
+        .game-tab.active {
+            background: #2563eb;
+            color: #ffffff;
+            border-color: #2563eb;
+            box-shadow: 0 2px 6px rgba(37, 99, 235, 0.2);
+        }
+
+        .game-tab.clickable {
+            cursor: pointer;
+        }
+
+        .btn-group {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            flex: 0 0 auto;
+            margin-left: auto;
+            padding-left: 4px;
+            background: #f8fafc;
+            position: sticky;
+            right: 0;
+            z-index: 2;
+        }
+
+        .btn-add {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            border: 1px solid #d1d9e6;
+            background: #ffffff;
+            color: #2563eb;
+            font-size: 22px;
+            font-weight: 300;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
+            padding: 0;
+            line-height: 1;
+        }
+
+        .btn-add:active {
+            transform: scale(0.92);
+            background: #f1f5f9;
+        }
+
+        .btn-refresh-header {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            border: 1px solid #d1d9e6;
+            background: #ffffff;
+            color: #2563eb;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
+            padding: 0;
+            line-height: 1;
+        }
+
+        .btn-refresh-header:active {
+            transform: scale(0.92);
+            background: #f1f5f9;
+        }
+
+        /* ---------- 模态框 ---------- */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.35);
+            backdrop-filter: blur(3px);
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 20px;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal-box {
+            background: #ffffff;
+            border-radius: 20px;
+            padding: 28px 24px 24px;
+            max-width: 400px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+            animation: modalFade 0.25s ease;
+        }
+
+        @keyframes modalFade {
+            from { opacity: 0; transform: translateY(20px) scale(0.96); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        .modal-box h3 {
+            font-size: 18px;
+            font-weight: 700;
+            color: #0f172a;
+            margin-bottom: 6px;
+        }
+
+        .modal-box .sub {
+            font-size: 13px;
+            color: #64748b;
+            margin-bottom: 20px;
+        }
+
+        .modal-box label {
+            display: block;
+            font-size: 13px;
+            font-weight: 500;
+            color: #334155;
+            margin-bottom: 4px;
+        }
+
+        .modal-box input {
+            width: 100%;
+            padding: 10px 14px;
+            border-radius: 10px;
+            border: 1px solid #d1d9e6;
+            font-size: 14px;
+            background: #fafcff;
+            transition: border 0.2s;
+            margin-bottom: 16px;
+            outline: none;
+        }
+
+        .modal-box input:focus {
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 4px;
+        }
+
+        .modal-actions .btn {
+            padding: 8px 22px;
+            border-radius: 30px;
+            font-size: 13px;
+            font-weight: 500;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .modal-actions .btn:active {
+            transform: scale(0.95);
+        }
+
+        .btn-cancel {
+            background: #f1f5f9;
+            color: #475569;
+        }
+
+        .btn-cancel:active {
+            background: #e2e8f0;
+        }
+
+        .btn-submit {
+            background: #2563eb;
+            color: #ffffff;
+            box-shadow: 0 2px 8px rgba(37, 99, 235, 0.25);
+        }
+
+        .btn-submit:active {
+            background: #1d4ed8;
+            box-shadow: 0 2px 4px rgba(37, 99, 235, 0.3);
+        }
+
+        .btn-submit:disabled {
+            opacity: 0.6;
+            pointer-events: none;
+        }
+
+        /* ---------- 统计卡片 ---------- */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 18px;
+        }
+
+        .stat-card {
+            background: #ffffff;
+            border-radius: 14px;
+            padding: 14px 6px;
+            text-align: center;
+            border: 1px solid #e9edf4;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+        }
+
+        .stat-card .num {
+            font-size: 26px;
+            font-weight: 700;
+            line-height: 1.2;
+            color: #0f172a;
+        }
+
+        .stat-card .label {
+            font-size: 11px;
+            color: #64748b;
+            margin-top: 4px;
+            letter-spacing: 0.2px;
+        }
+
+        .stat-card.highlight .num { color: #0f172a; }
+        .stat-card.success .num { color: #16a34a; }
+        .stat-card.warning .num { color: #d97706; }
+
+        /* ---------- 整体提交率 ---------- */
+        .rate-section {
+            background: #ffffff;
+            border-radius: 14px;
+            padding: 14px 16px;
+            margin-bottom: 18px;
+            border: 1px solid #e9edf4;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+        }
+
+        .rate-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            margin-bottom: 6px;
+        }
+
+        .rate-row span:first-child {
+            color: #475569;
+        }
+
+        .rate-row span:last-child {
+            font-weight: 600;
+            color: #0f172a;
+        }
+
+        .progress-track {
+            width: 100%;
+            height: 8px;
+            background: #e9edf4;
+            border-radius: 20px;
+            overflow: hidden;
+            margin-top: 4px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            border-radius: 20px;
+            background: #3b82f6;
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+
+        /* ---------- 班级数据区域 ---------- */
+        .class-section-title {
+            font-size: 15px;
+            font-weight: 600;
+            color: #0f172a;
+            margin: 18px 0 12px 4px;
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px 12px;
+        }
+
+        .class-section-title .sub {
+            font-size: 12px;
+            font-weight: 400;
+            color: #94a3b8;
+        }
+
+        .date-nav {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            margin-left: auto;
+            background: #f1f5f9;
+            border-radius: 30px;
+            padding: 2px 6px;
+            border: 1px solid #e9edf4;
+        }
+
+        .date-nav .date-display {
+            font-size: 13px;
+            font-weight: 500;
+            color: #0f172a;
+            min-width: 80px;
+            text-align: center;
+            padding: 4px 2px;
+            letter-spacing: 0.3px;
+        }
+
+        .date-nav .date-btn {
+            background: transparent;
+            border: none;
+            color: #475569;
+            font-size: 18px;
+            font-weight: 300;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.15s;
+            padding: 0;
+            line-height: 1;
+        }
+
+        .date-nav .date-btn:active {
+            background: #d1d9e6;
+            transform: scale(0.92);
+        }
+
+        .date-nav .date-btn.today-btn {
+            font-size: 11px;
+            font-weight: 500;
+            color: #2563eb;
+            width: auto;
+            padding: 0 10px;
+            border-radius: 30px;
+            background: transparent;
+        }
+
+        .date-nav .date-btn.today-btn:active {
+            background: #d1d9e6;
+        }
+
+        .class-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 18px;
+        }
+
+        .class-card {
+            background: #ffffff;
+            border-radius: 14px;
+            border: 1px solid #e9edf4;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+            padding: 14px 16px;
+            transition: box-shadow 0.2s;
+        }
+
+        .class-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 4px;
+        }
+
+        .class-card-header .class-name {
+            font-size: 15px;
+            font-weight: 600;
+            color: #0f172a;
+        }
+
+        .class-card-header .class-rate {
+            font-size: 14px;
+            font-weight: 700;
+            color: #2563eb;
+        }
+
+        .class-card .class-meta {
+            font-size: 12px;
+            color: #64748b;
+            margin-bottom: 6px;
+        }
+
+        .class-card .class-meta strong {
+            color: #0f172a;
+            font-weight: 600;
+        }
+
+        .class-card .progress-track {
+            margin: 6px 0 10px;
+            height: 6px;
+        }
+
+        .class-card .progress-fill {
+            height: 100%;
+            border-radius: 20px;
+            background: #3b82f6;
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+
+        /* 未提交标签列表 */
+        .missing-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: 6px;
+            align-items: center;
+        }
+
+        .missing-tags .label {
+            font-size: 11px;
+            color: #64748b;
+            margin-right: 2px;
+        }
+
+        .missing-tag {
+            background: #fef3c7;
+            color: #b45309;
+            font-size: 11px;
+            padding: 2px 10px;
+            border-radius: 30px;
+            font-weight: 500;
+            border: 1px solid #fde68a;
+        }
+
+        .all-done {
+            font-size: 12px;
+            color: #16a34a;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        /* 已提交记录 - 紧凑两列布局 + 下拉菜单排序 */
+        .submitted-records {
+            margin-top: 10px;
+            border-top: 1px solid #f1f5f9;
+            padding-top: 8px;
+        }
+
+        .submitted-records .sub-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 6px;
+        }
+
+        .submitted-records .sub-label {
+            font-size: 11px;
+            font-weight: 500;
+            color: #64748b;
+        }
+
+        .sort-select {
+            font-size: 12px;
+            padding: 2px 8px 2px 6px;
+            border-radius: 30px;
+            border: 1px solid #d1d9e6;
+            background: #ffffff;
+            color: #1e293b;
+            outline: none;
+            height: 28px;
+            cursor: pointer;
+            appearance: auto;
+            max-width: 120px;
+        }
+
+        .sort-select:focus {
+            border-color: #2563eb;
+        }
+
+        .record-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12px;
+            padding: 3px 0;
+            border-bottom: 1px dashed #f1f5f9;
+            line-height: 1.4;
+        }
+
+        .record-item:last-child {
+            border-bottom: none;
+        }
+
+        .record-item .r-left {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            flex: 1;
+            min-width: 0;
+        }
+
+        .record-item .r-left .r-rank {
+            font-weight: 600;
+            color: #94a3b8;
+            font-size: 11px;
+            min-width: 24px;
+        }
+
+        .record-item .r-left .r-name {
+            font-weight: 500;
+            color: #0f172a;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .record-item .r-right {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex-shrink: 0;
+        }
+
+        .record-item .r-right .r-score {
+            font-weight: 600;
+            color: #2563eb;
+            min-width: 28px;
+            text-align: right;
+        }
+
+        .record-item .r-right .r-time {
+            color: #94a3b8;
+            font-size: 11px;
+            min-width: 32px;
+            text-align: right;
+        }
+
+        .record-item .r-right .r-submit-time {
+            font-size: 10px;
+            color: #94a3b8;
+            min-width: 36px;
+            text-align: right;
+        }
+
+        /* 滚动容器 & 展开按钮 */
+        .records-scroll {
+            max-height: 140px;
+            overflow-y: auto;
+            transition: max-height 0.3s ease;
+        }
+
+        .records-scroll::-webkit-scrollbar {
+            width: 4px;
+        }
+        .records-scroll::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .records-scroll::-webkit-scrollbar-thumb {
+            background: #d1d9e6;
+            border-radius: 10px;
+        }
+
+        .toggle-records-btn {
+            background: transparent;
+            border: none;
+            color: #2563eb;
+            font-size: 12px;
+            font-weight: 500;
+            padding: 4px 0;
+            margin-top: 4px;
+            cursor: pointer;
+            text-decoration: underline;
+            text-underline-offset: 2px;
+        }
+
+        .toggle-records-btn:active {
+            opacity: 0.6;
+        }
+
+        /* ---------- 底部 ---------- */
+        .footer {
+            text-align: center;
+            font-size: 10px;
+            color: #94a3b8;
+            margin-top: 20px;
+            padding-top: 12px;
+            border-top: 1px solid #e9edf4;
+        }
+
+        /* ---------- 手机端微调 ---------- */
+        @media (max-width: 380px) {
+            .stat-card .num { font-size: 22px; }
+            .stats-grid { gap: 6px; }
+            .class-card { padding: 12px 12px; }
+            .game-tab { font-size: 12px; padding: 5px 14px; }
+            .btn-add { width: 30px; height: 30px; font-size: 18px; }
+            .btn-refresh-header { width: 30px; height: 30px; font-size: 16px; }
+            .date-nav .date-display { font-size: 12px; min-width: 70px; }
+            .date-nav .date-btn { width: 28px; height: 28px; font-size: 16px; }
+            .record-item { font-size: 11px; }
+            .record-item .r-left .r-rank { min-width: 20px; font-size: 10px; }
+            .record-item .r-right .r-score { min-width: 24px; }
+            .record-item .r-right .r-time { min-width: 28px; font-size: 10px; }
+            .record-item .r-right .r-submit-time { font-size: 9px; min-width: 30px; }
+            .records-scroll { max-height: 120px; }
+            .sort-select { font-size: 11px; max-width: 100px; height: 26px; padding: 1px 6px; }
+            .game-tabs-wrapper::-webkit-scrollbar { height: 3px; }
+        }
+
+        .text-ellipsis {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 80px;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard" id="app">
+        <!-- 头部 -->
+        <div class="header">
+            <h1>📊 数据看板</h1>
+            <div class="badge">
+                <span class="dot"></span>
+                <span id="liveLabel">实时</span>
+            </div>
+        </div>
+
+        <!-- 游戏名称选项卡 + 添加按钮 + 刷新按钮（上方） -->
+        <div class="game-tabs-wrapper">
+            <div class="game-tabs" id="gameTabs">
+                <!-- 由 JS 动态渲染 -->
+            </div>
+            <div class="btn-group">
+                <button class="btn-refresh-header" id="refreshBtnHeader" aria-label="刷新">⟳</button>
+                <button class="btn-add" id="btnAdd" aria-label="添加游戏">+</button>
+            </div>
+        </div>
+
+        <!-- 统计卡片 -->
+        <div class="stats-grid" id="statsGrid">
+            <div class="stat-card highlight">
+                <div class="num" id="totalStudents">-</div>
+                <div class="label">📋 白名单总数</div>
+            </div>
+            <div class="stat-card success">
+                <div class="num" id="submittedCount">-</div>
+                <div class="label">✅ 已提交</div>
+            </div>
+            <div class="stat-card warning">
+                <div class="num" id="missingCount">-</div>
+                <div class="label">⏳ 未提交</div>
+            </div>
+        </div>
+
+        <!-- 整体提交率 -->
+        <div class="rate-section">
+            <div class="rate-row">
+                <span>📊 整体提交率</span>
+                <span id="rateText">0%</span>
+            </div>
+            <div class="progress-track">
+                <div class="progress-fill" id="rateBar" style="width:0%"></div>
+            </div>
+        </div>
+
+        <!-- 班级数据 + 简洁日期切换 -->
+        <div class="class-section-title">
+            <span>🏫 班级数据</span>
+            <span class="sub" id="classCount">0 个班级</span>
+            <div class="date-nav">
+                <button class="date-btn" id="datePrev" aria-label="前一天">‹</button>
+                <span class="date-display" id="dateDisplay">--</span>
+                <button class="date-btn" id="dateNext" aria-label="后一天">›</button>
+                <button class="date-btn today-btn" id="dateToday">今天</button>
+            </div>
+        </div>
+        <div class="class-grid" id="classGrid">
+            <div class="loading">
+                <div class="spinner"></div>
+                <div>加载班级数据...</div>
+            </div>
+        </div>
+
+        <div class="footer">
+            数据每 10 秒自动同步 · 白名单 API · 游戏数据 API
+        </div>
+    </div>
+
+    <!-- 模态框 -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal-box">
+            <h3>➕ 添加游戏数据</h3>
+            <div class="sub">填写数据链接 API 和游戏名称，将自动同步到看板</div>
+            <label for="inputApiUrl">数据链接 API</label>
+            <input type="url" id="inputApiUrl" placeholder="https://quickform.cn/api/xxx/all" value="https://quickform.cn/api/vylw99t9pn/all">
+            <label for="inputGameName">游戏名称</label>
+            <input type="text" id="inputGameName" placeholder="例如：数学挑战" value="游戏数据">
+            <div class="modal-actions">
+                <button class="btn btn-cancel" id="modalCancel">取消</button>
+                <button class="btn btn-submit" id="modalSubmit">确认添加</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            'use strict';
+
+            // ---------- 配置 ----------
+            const GAME_LIST_API = 'https://quickform.cn/api/9d5osbhmxw/all';
+            const GAME_POST_API = 'https://quickform.cn/api/9d5osbhmxw';
+            const WHITELIST_API = 'https://quickform.cn/api/5tmbx2o6rg/all';
+            const REFRESH_INTERVAL = 10; // 秒
+
+            // ---------- DOM ----------
+            const totalStudentsEl = document.getElementById('totalStudents');
+            const submittedCountEl = document.getElementById('submittedCount');
+            const missingCountEl = document.getElementById('missingCount');
+            const rateTextEl = document.getElementById('rateText');
+            const rateBarEl = document.getElementById('rateBar');
+            const classGridEl = document.getElementById('classGrid');
+            const classCountEl = document.getElementById('classCount');
+            const refreshBtnHeader = document.getElementById('refreshBtnHeader');
+            const gameTabsEl = document.getElementById('gameTabs');
+            const btnAdd = document.getElementById('btnAdd');
+            const modalOverlay = document.getElementById('modalOverlay');
+            const modalCancel = document.getElementById('modalCancel');
+            const modalSubmit = document.getElementById('modalSubmit');
+            const inputApiUrl = document.getElementById('inputApiUrl');
+            const inputGameName = document.getElementById('inputGameName');
+
+            // 日期控件
+            const dateDisplay = document.getElementById('dateDisplay');
+            const datePrev = document.getElementById('datePrev');
+            const dateNext = document.getElementById('dateNext');
+            const dateToday = document.getElementById('dateToday');
+
+            // ---------- 全局状态 ----------
+            let countdownTimer = null;
+            let currentGameList = [];
+            let currentTaskId = null;
+            let currentSubmissions = [];
+            let currentDate = new Date();
+
+            // 存储每个班级的原始数据
+            let classDataMap = {};
+            // 排序状态: 'rank-desc' | 'rank-asc' | 'time-desc' | 'time-asc'
+            let sortState = {};
+
+            // ---------- 工具 ----------
+            function formatName(name) {
+                if (!name) return '未知';
+                return String(name).trim() || '未知';
+            }
+
+            function getScoreClass(score) {
+                const s = Number(score);
+                if (s >= 90) return 'score-high';
+                if (s >= 70) return 'score-mid';
+                return 'score-low';
+            }
+
+            function deduplicateBy(arr, keys) {
+                const map = new Map();
+                for (const item of arr) {
+                    const key = keys.map(k => (item[k] ?? '')).join('|');
+                    if (!map.has(key)) {
+                        map.set(key, item);
+                    }
+                }
+                return Array.from(map.values());
+            }
+
+            function getTodayStr() {
+                const d = new Date();
+                return d.toISOString().slice(0, 10);
+            }
+
+            function formatDateDisplay(date) {
+                const y = date.getFullYear();
+                const m = String(date.getMonth() + 1).padStart(2, '0');
+                const d = String(date.getDate()).padStart(2, '0');
+                return `${y}-${m}-${d}`;
+            }
+
+            function dateToStr(date) {
+                return formatDateDisplay(date);
+            }
+
+            function cloneDate(date) {
+                return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+            }
+
+            function formatTime(submittedAt) {
+                if (!submittedAt) return '--';
+                try {
+                    const d = new Date(submittedAt);
+                    return d.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
+                } catch {
+                    return '--';
+                }
+            }
+
+            // ---------- 获取游戏列表 ----------
+            async function fetchGameList() {
+                try {
+                    const res = await fetch(GAME_LIST_API);
+                    if (!res.ok) throw new Error('获取游戏列表失败');
+                    const data = await res.json();
+                    const subs = data.submissions || [];
+                    const gameMap = new Map();
+                    for (const s of subs) {
+                        const apiUrl = s.api_url || s.data_link || '';
+                        const gameName = s.game_name || s.task_title || '未命名';
+                        if (apiUrl) {
+                            const key = apiUrl;
+                            if (!gameMap.has(key)) {
+                                gameMap.set(key, {
+                                    id: s.task_id || key,
+                                    title: gameName,
+                                    api_url: apiUrl
+                                });
+                            }
+                        }
+                    }
+                    if (gameMap.size === 0) {
+                        const defaultGame = {
+                            id: data.task_id || 'default',
+                            title: data.task_title || '数据看板',
+                            api_url: GAME_LIST_API
+                        };
+                        gameMap.set(defaultGame.api_url, defaultGame);
+                    }
+                    return Array.from(gameMap.values());
+                } catch (err) {
+                    console.error('获取游戏列表失败:', err);
+                    return [{
+                        id: 'default',
+                        title: '数据看板',
+                        api_url: GAME_LIST_API
+                    }];
+                }
+            }
+
+            // ---------- 加载指定游戏的数据 ----------
+            async function fetchGameData(apiUrl) {
+                try {
+                    const res = await fetch(apiUrl);
+                    if (!res.ok) throw new Error('获取游戏数据失败');
+                    const data = await res.json();
+                    return data;
+                } catch (err) {
+                    console.error('加载游戏数据失败:', err);
+                    return null;
+                }
+            }
+
+            // ---------- 重新渲染单个班级的记录（排序切换时调用） ----------
+            function renderClassRecords(className) {
+                const data = classDataMap[className];
+                if (!data) return;
+                const card = document.querySelector(`.class-card[data-class="${className}"]`);
+                if (!card) return;
+                const container = card.querySelector('.submitted-records');
+                if (!container) return;
+
+                const submittedList = data.submittedList || [];
+                const sortType = sortState[className] || 'rank-desc';
+
+                // 根据排序方式排序
+                const sorted = [...submittedList];
+                if (sortType === 'rank-desc') {
+                    sorted.sort((a, b) => (b.score || 0) - (a.score || 0));
+                } else if (sortType === 'rank-asc') {
+                    sorted.sort((a, b) => (a.score || 0) - (b.score || 0));
+                } else if (sortType === 'time-desc') {
+                    sorted.sort((a, b) => new Date(b.submitted_at) - new Date(a.submitted_at));
+                } else if (sortType === 'time-asc') {
+                    sorted.sort((a, b) => new Date(a.submitted_at) - new Date(b.submitted_at));
+                }
+
+                // 构建HTML
+                let html = `
+                    <div class="sub-header">
+                        <span class="sub-label">📌 已提交记录</span>
+                        <select class="sort-select" data-class="${className}">
+                            <option value="rank-desc" ${sortType === 'rank-desc' ? 'selected' : ''}>排名降序</option>
+                            <option value="rank-asc" ${sortType === 'rank-asc' ? 'selected' : ''}>排名升序</option>
+                            <option value="time-desc" ${sortType === 'time-desc' ? 'selected' : ''}>时间降序</option>
+                            <option value="time-asc" ${sortType === 'time-asc' ? 'selected' : ''}>时间升序</option>
+                        </select>
+                    </div>
+                `;
+
+                if (sorted.length === 0) {
+                    html += `<div style="font-size:12px;color:#94a3b8;padding:4px 0;">暂无记录</div>`;
+                } else {
+                    let itemsHtml = '';
+                    for (const [idx, rec] of sorted.entries()) {
+                        const rank = idx + 1;
+                        const score = rec.score ?? 0;
+                        const time = rec.time || '--';
+                        const submitTime = formatTime(rec.submitted_at);
+                        itemsHtml += `
+                            <div class="record-item">
+                                <span class="r-left">
+                                    <span class="r-rank">#${rank}</span>
+                                    <span class="r-name">${formatName(rec.name)}</span>
+                                </span>
+                                <span class="r-right">
+                                    <span class="r-score">${score}</span>
+                                    <span class="r-time">${time}</span>
+                                    <span class="r-submit-time">${submitTime}</span>
+                                </span>
+                            </div>
+                        `;
+                    }
+                    // 如果超过5条，加入滚动容器和展开按钮
+                    if (sorted.length > 5) {
+                        html += `
+                            <div class="records-scroll" style="max-height: 140px; overflow-y: auto;">
+                                ${itemsHtml}
+                            </div>
+                            <button class="toggle-records-btn" data-expanded="false">展开全部</button>
+                        `;
+                    } else {
+                        html += itemsHtml;
+                    }
+                }
+                container.innerHTML = html;
+            }
+
+            // ---------- 核心加载 ----------
+            async function loadGameData(apiUrl, dateStr) {
+                const data = await fetchGameData(apiUrl);
+                if (!data) {
+                    showEmpty();
+                    return;
+                }
+
+                let gameSubs = data.submissions || [];
+                // 过滤 4班
+                gameSubs = gameSubs.filter(g => (g.class || '') !== '4班');
+
+                const uniqueGames = deduplicateBy(gameSubs, ['name', 'class']);
+                uniqueGames.sort((a, b) => new Date(b.submitted_at) - new Date(a.submitted_at));
+                currentSubmissions = uniqueGames;
+
+                // 白名单
+                const whiteRes = await fetch(WHITELIST_API);
+                let whiteSubs = [];
+                if (whiteRes.ok) {
+                    const whiteData = await whiteRes.json();
+                    whiteSubs = whiteData.submissions || [];
+                }
+                whiteSubs = whiteSubs.filter(w => (w.class || '') !== '4班');
+
+                const whiteSet = new Map();
+                const whiteList = [];
+                for (const w of whiteSubs) {
+                    const key = `${w.name || ''}|${w.class || ''}`;
+                    if (!whiteSet.has(key)) {
+                        whiteSet.set(key, true);
+                        whiteList.push({ name: w.name || '', class: w.class || '' });
+                    }
+                }
+
+                // 按日期筛选游戏记录
+                let filteredGames = uniqueGames;
+                if (dateStr) {
+                    filteredGames = uniqueGames.filter(g => {
+                        if (!g.submitted_at) return false;
+                        const gDate = new Date(g.submitted_at).toISOString().slice(0, 10);
+                        return gDate === dateStr;
+                    });
+                }
+
+                // 构建记录映射 (name+class -> 记录)
+                const recordMap = new Map();
+                for (const g of filteredGames) {
+                    const key = `${g.name || ''}|${g.class || ''}`;
+                    recordMap.set(key, g);
+                }
+
+                // 统计班级数据
+                const classMap = new Map();
+                for (const w of whiteList) {
+                    const cls = w.class || '未分组';
+                    if (!classMap.has(cls)) {
+                        classMap.set(cls, { total: 0, submitted: 0, missing: [], submittedList: [] });
+                    }
+                    const entry = classMap.get(cls);
+                    entry.total++;
+                    const key = `${w.name}|${cls}`;
+                    if (recordMap.has(key)) {
+                        entry.submitted++;
+                        const record = recordMap.get(key);
+                        entry.submittedList.push({
+                            name: record.name || w.name,
+                            score: record.score ?? record.correct ?? 0,
+                            time: record.time || '--',
+                            submitted_at: record.submitted_at
+                        });
+                    } else {
+                        entry.missing.push(w.name || '未知');
+                    }
+                }
+
+                const classEntries = Array.from(classMap.entries())
+                    .map(([cls, data]) => ({
+                        className: cls,
+                        total: data.total,
+                        submitted: data.submitted,
+                        missing: data.missing,
+                        submittedList: data.submittedList,
+                        rate: data.total === 0 ? 0 : (data.submitted / data.total) * 100
+                    }))
+                    .sort((a, b) => {
+                        if (a.className === '未分组') return 1;
+                        if (b.className === '未分组') return -1;
+                        return a.className.localeCompare(b.className);
+                    });
+
+                const total = whiteList.length;
+                const submitted = whiteList.filter(w => recordMap.has(`${w.name}|${w.class || ''}`)).length;
+                const missing = total - submitted;
+                const rate = total === 0 ? 0 : (submitted / total) * 100;
+
+                // 更新全局统计
+                totalStudentsEl.textContent = total;
+                submittedCountEl.textContent = submitted;
+                missingCountEl.textContent = missing;
+                rateTextEl.textContent = `${Math.round(rate)}%`;
+                rateBarEl.style.width = `${Math.min(rate, 100)}%`;
+                classCountEl.textContent = `${classEntries.length} 个班级`;
+
+                // 存储班级数据到全局，并初始化排序状态
+                classDataMap = {};
+                sortState = {};
+                for (const cls of classEntries) {
+                    classDataMap[cls.className] = {
+                        submittedList: cls.submittedList,
+                        missing: cls.missing,
+                        total: cls.total,
+                        submitted: cls.submitted,
+                        rate: cls.rate
+                    };
+                    // 默认按排名降序（得分高→低）
+                    sortState[cls.className] = 'rank-desc';
+                }
+
+                // 渲染班级卡片
+                if (classEntries.length === 0) {
+                    classGridEl.innerHTML = `<div class="empty">暂无白名单数据</div>`;
+                } else {
+                    let html = '';
+                    for (const cls of classEntries) {
+                        const rateDisplay = Math.round(cls.rate);
+                        const missingList = cls.missing;
+                        html += `
+                            <div class="class-card" data-class="${cls.className}">
+                                <div class="class-card-header">
+                                    <span class="class-name">📚 ${cls.className}</span>
+                                    <span class="class-rate">${rateDisplay}%</span>
+                                </div>
+                                <div class="class-meta">
+                                    已提交 <strong>${cls.submitted}</strong> 人 · 总人数 <strong>${cls.total}</strong> 人
+                                </div>
+                                <div class="progress-track">
+                                    <div class="progress-fill" style="width:${Math.min(cls.rate, 100)}%"></div>
+                                </div>
+                                <div class="missing-tags">
+                                    <span class="label">未提交：</span>
+                        `;
+                        if (missingList.length === 0) {
+                            html += `<span class="all-done">✅ 全部提交</span>`;
+                        } else {
+                            for (const name of missingList) {
+                                html += `<span class="missing-tag">${formatName(name)}</span>`;
+                            }
+                        }
+                        html += `
+                                </div>
+                                <div class="submitted-records">
+                                    <!-- 由 renderClassRecords 填充 -->
+                                </div>
+                            </div>
+                        `;
+                    }
+                    classGridEl.innerHTML = html;
+
+                    // 为每个班级渲染记录
+                    for (const cls of classEntries) {
+                        renderClassRecords(cls.className);
+                    }
+                }
+            }
+
+            function showEmpty() {
+                totalStudentsEl.textContent = '-';
+                submittedCountEl.textContent = '-';
+                missingCountEl.textContent = '-';
+                rateTextEl.textContent = '0%';
+                rateBarEl.style.width = '0%';
+                classCountEl.textContent = '0 个班级';
+                classGridEl.innerHTML = `<div class="empty">暂无数据，请添加游戏</div>`;
+                classDataMap = {};
+                sortState = {};
+            }
+
+            // ---------- 刷新 ----------
+            async function refreshData() {
+                const dateStr = dateToStr(currentDate);
+                const game = currentGameList.find(g => g.id === currentTaskId);
+                if (game) {
+                    await loadGameData(game.api_url, dateStr);
+                } else {
+                    const list = await fetchGameList();
+                    currentGameList = list;
+                    if (list.length > 0) {
+                        currentTaskId = list[0].id;
+                        renderTabs(list);
+                        await loadGameData(list[0].api_url, dateStr);
+                    } else {
+                        showEmpty();
+                    }
+                }
+            }
+
+            // ---------- 日期切换 ----------
+            function updateDateDisplay() {
+                dateDisplay.textContent = formatDateDisplay(currentDate);
+            }
+
+            function goToDate(date) {
+                currentDate = date;
+                updateDateDisplay();
+                const dateStr = dateToStr(currentDate);
+                const game = currentGameList.find(g => g.id === currentTaskId);
+                if (game) {
+                    loadGameData(game.api_url, dateStr);
+                }
+            }
+
+            function goPrevDay() {
+                const newDate = cloneDate(currentDate);
+                newDate.setDate(newDate.getDate() - 1);
+                goToDate(newDate);
+            }
+
+            function goNextDay() {
+                const newDate = cloneDate(currentDate);
+                newDate.setDate(newDate.getDate() + 1);
+                goToDate(newDate);
+            }
+
+            function goToday() {
+                goToDate(new Date());
+            }
+
+            // ---------- 渲染选项卡 ----------
+            function renderTabs(list) {
+                if (!list || list.length === 0) {
+                    gameTabsEl.innerHTML = `<div class="game-tab active">📊 数据看板</div>`;
+                    return;
+                }
+                let html = '';
+                for (const g of list) {
+                    const active = (g.id === currentTaskId) ? 'active' : '';
+                    html += `<div class="game-tab clickable ${active}" data-id="${g.id}" data-api="${g.api_url}">${g.title}</div>`;
+                }
+                gameTabsEl.innerHTML = html;
+
+                document.querySelectorAll('.game-tab.clickable').forEach(tab => {
+                    tab.addEventListener('click', function() {
+                        const id = this.dataset.id;
+                        const api = this.dataset.api;
+                        if (id && api) {
+                            currentTaskId = id;
+                            document.querySelectorAll('.game-tab').forEach(t => t.classList.remove('active'));
+                            this.classList.add('active');
+                            const dateStr = dateToStr(currentDate);
+                            loadGameData(api, dateStr);
+                        }
+                    });
+                });
+            }
+
+            // ---------- 添加游戏 ----------
+            async function addGame(apiUrl, gameName) {
+                try {
+                    const payload = { api_url: apiUrl, game_name: gameName };
+                    const res = await fetch(GAME_POST_API, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload),
+                    });
+                    if (!res.ok) throw new Error('添加游戏失败');
+                    const list = await fetchGameList();
+                    currentGameList = list;
+                    if (list.length > 0) {
+                        const last = list[list.length - 1];
+                        currentTaskId = last.id;
+                        renderTabs(list);
+                        const dateStr = dateToStr(currentDate);
+                        await loadGameData(last.api_url, dateStr);
+                    }
+                    return true;
+                } catch (err) {
+                    console.error('添加游戏失败:', err);
+                    alert('添加失败，请检查网络或 API 地址是否正确');
+                    return false;
+                }
+            }
+
+            // ---------- 自动刷新 ----------
+            function startAutoRefresh() {
+                if (countdownTimer) clearInterval(countdownTimer);
+                countdownTimer = setInterval(() => {
+                    refreshData();
+                }, REFRESH_INTERVAL * 1000);
+            }
+
+            // ---------- 模态框 ----------
+            function openModal() {
+                modalOverlay.classList.add('active');
+                inputApiUrl.focus();
+            }
+
+            function closeModal() {
+                modalOverlay.classList.remove('active');
+            }
+
+            // ---------- 事件委托：排序下拉菜单 & 展开/收起 ----------
+            function setupEventDelegation() {
+                classGridEl.addEventListener('change', function(e) {
+                    const select = e.target.closest('.sort-select');
+                    if (!select) return;
+                    const className = select.dataset.class;
+                    if (!className) return;
+                    const newSort = select.value;
+                    if (sortState[className] !== newSort) {
+                        sortState[className] = newSort;
+                        renderClassRecords(className);
+                    }
+                });
+
+                classGridEl.addEventListener('click', function(e) {
+                    // 展开/收起按钮
+                    const toggleBtn = e.target.closest('.toggle-records-btn');
+                    if (!toggleBtn) return;
+                    const card = toggleBtn.closest('.class-card');
+                    if (!card) return;
+                    const scroll = card.querySelector('.records-scroll');
+                    if (!scroll) return;
+                    const isExpanded = toggleBtn.dataset.expanded === 'true';
+                    if (isExpanded) {
+                        scroll.style.maxHeight = '140px';
+                        toggleBtn.textContent = '展开全部';
+                        toggleBtn.dataset.expanded = 'false';
+                    } else {
+                        scroll.style.maxHeight = 'none';
+                        toggleBtn.textContent = '收起';
+                        toggleBtn.dataset.expanded = 'true';
+                    }
+                });
+            }
+
+            // ---------- 初始化 ----------
+            async function init() {
+                currentDate = new Date();
+                updateDateDisplay();
+
+                const list = await fetchGameList();
+                currentGameList = list;
+                if (list.length > 0) {
+                    currentTaskId = list[0].id;
+                    renderTabs(list);
+                    await loadGameData(list[0].api_url, dateToStr(currentDate));
+                } else {
+                    showEmpty();
+                    currentTaskId = 'default';
+                    renderTabs([{ id: 'default', title: '数据看板', api_url: GAME_LIST_API }]);
+                }
+
+                startAutoRefresh();
+                setupEventDelegation();
+
+                datePrev.addEventListener('click', goPrevDay);
+                dateNext.addEventListener('click', goNextDay);
+                dateToday.addEventListener('click', goToday);
+
+                refreshBtnHeader.addEventListener('click', function() {
+                    refreshData();
+                });
+
+                btnAdd.addEventListener('click', openModal);
+                modalCancel.addEventListener('click', closeModal);
+                modalOverlay.addEventListener('click', function(e) {
+                    if (e.target === this) closeModal();
+                });
+
+                modalSubmit.addEventListener('click', async function() {
+                    const apiUrl = inputApiUrl.value.trim();
+                    const gameName = inputGameName.value.trim() || '未命名游戏';
+                    if (!apiUrl) {
+                        alert('请输入数据链接 API');
+                        return;
+                    }
+                    modalSubmit.disabled = true;
+                    modalSubmit.textContent = '提交中...';
+                    const success = await addGame(apiUrl, gameName);
+                    modalSubmit.disabled = false;
+                    modalSubmit.textContent = '确认添加';
+                    if (success) {
+                        closeModal();
+                        inputApiUrl.value = '';
+                        inputGameName.value = '';
+                    }
+                });
+
+                inputApiUrl.addEventListener('keydown', function(e) {
+                    if (e.key === 'Enter') { e.preventDefault(); inputGameName.focus(); }
+                });
+                inputGameName.addEventListener('keydown', function(e) {
+                    if (e.key === 'Enter') { e.preventDefault(); modalSubmit.click(); }
+                });
+                document.addEventListener('keydown', function(e) {
+                    if (e.key === 'Escape' && modalOverlay.classList.contains('active')) {
+                        closeModal();
+                    }
+                });
+            }
+
+            document.addEventListener('visibilitychange', () => {
+                if (!document.hidden) {
+                    refreshData();
+                }
+            });
+
+            init();
+        })();
+    </script>
+</body>
+</html>
