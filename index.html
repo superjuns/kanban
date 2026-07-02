@@ -64,8 +64,15 @@
         }
 
         @keyframes pulse-dot {
-            0%, 100% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.4; transform: scale(0.7); }
+            0%,
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+            50% {
+                opacity: 0.4;
+                transform: scale(0.7);
+            }
         }
 
         /* ---------- 游戏名称选项卡 + 添加按钮 + 刷新按钮 ---------- */
@@ -77,12 +84,10 @@
             margin-bottom: 6px;
             overflow-x: auto;
             -webkit-overflow-scrolling: touch;
-            /* 滚动条样式 - 可见且美观 */
             scrollbar-width: thin;
             scrollbar-color: #c1c9d6 #e9edf4;
         }
 
-        /* WebKit 滚动条样式 */
         .game-tabs-wrapper::-webkit-scrollbar {
             height: 4px;
         }
@@ -223,8 +228,14 @@
         }
 
         @keyframes modalFade {
-            from { opacity: 0; transform: translateY(20px) scale(0.96); }
-            to { opacity: 1; transform: translateY(0) scale(1); }
+            from {
+                opacity: 0;
+                transform: translateY(20px) scale(0.96);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
         }
 
         .modal-box h3 {
@@ -342,9 +353,15 @@
             letter-spacing: 0.2px;
         }
 
-        .stat-card.highlight .num { color: #0f172a; }
-        .stat-card.success .num { color: #16a34a; }
-        .stat-card.warning .num { color: #d97706; }
+        .stat-card.highlight .num {
+            color: #0f172a;
+        }
+        .stat-card.success .num {
+            color: #16a34a;
+        }
+        .stat-card.warning .num {
+            color: #d97706;
+        }
 
         /* ---------- 整体提交率 ---------- */
         .rate-section {
@@ -708,22 +725,68 @@
 
         /* ---------- 手机端微调 ---------- */
         @media (max-width: 380px) {
-            .stat-card .num { font-size: 22px; }
-            .stats-grid { gap: 6px; }
-            .class-card { padding: 12px 12px; }
-            .game-tab { font-size: 12px; padding: 5px 14px; }
-            .btn-add { width: 30px; height: 30px; font-size: 18px; }
-            .btn-refresh-header { width: 30px; height: 30px; font-size: 16px; }
-            .date-nav .date-display { font-size: 12px; min-width: 70px; }
-            .date-nav .date-btn { width: 28px; height: 28px; font-size: 16px; }
-            .record-item { font-size: 11px; }
-            .record-item .r-left .r-rank { min-width: 20px; font-size: 10px; }
-            .record-item .r-right .r-score { min-width: 24px; }
-            .record-item .r-right .r-time { min-width: 28px; font-size: 10px; }
-            .record-item .r-right .r-submit-time { font-size: 9px; min-width: 30px; }
-            .records-scroll { max-height: 120px; }
-            .sort-select { font-size: 11px; max-width: 100px; height: 26px; padding: 1px 6px; }
-            .game-tabs-wrapper::-webkit-scrollbar { height: 3px; }
+            .stat-card .num {
+                font-size: 22px;
+            }
+            .stats-grid {
+                gap: 6px;
+            }
+            .class-card {
+                padding: 12px 12px;
+            }
+            .game-tab {
+                font-size: 12px;
+                padding: 5px 14px;
+            }
+            .btn-add {
+                width: 30px;
+                height: 30px;
+                font-size: 18px;
+            }
+            .btn-refresh-header {
+                width: 30px;
+                height: 30px;
+                font-size: 16px;
+            }
+            .date-nav .date-display {
+                font-size: 12px;
+                min-width: 70px;
+            }
+            .date-nav .date-btn {
+                width: 28px;
+                height: 28px;
+                font-size: 16px;
+            }
+            .record-item {
+                font-size: 11px;
+            }
+            .record-item .r-left .r-rank {
+                min-width: 20px;
+                font-size: 10px;
+            }
+            .record-item .r-right .r-score {
+                min-width: 24px;
+            }
+            .record-item .r-right .r-time {
+                min-width: 28px;
+                font-size: 10px;
+            }
+            .record-item .r-right .r-submit-time {
+                font-size: 9px;
+                min-width: 30px;
+            }
+            .records-scroll {
+                max-height: 120px;
+            }
+            .sort-select {
+                font-size: 11px;
+                max-width: 100px;
+                height: 26px;
+                padding: 1px 6px;
+            }
+            .game-tabs-wrapper::-webkit-scrollbar {
+                height: 3px;
+            }
         }
 
         .text-ellipsis {
@@ -829,7 +892,7 @@
             // ---------- 配置 ----------
             const GAME_LIST_API = 'https://wzkjgz.site/api/9d5osbhmxw/all';
             const GAME_POST_API = 'https://wzkjgz.site/api/9d5osbhmxw';
-            const WHITELIST_API = 'https://quickform.cn/api/5tmbx2o6rg/all';
+            const WHITELIST_API = 'https://wzkjgz.site/api/5tmbx2o6rg/all';  // ✅ 已更新白名单API
             const REFRESH_INTERVAL = 10; // 秒
 
             // ---------- DOM ----------
@@ -1001,16 +1064,16 @@
 
                 // 构建HTML
                 let html = `
-                    <div class="sub-header">
-                        <span class="sub-label">📌 已提交记录</span>
-                        <select class="sort-select" data-class="${className}">
-                            <option value="rank-desc" ${sortType === 'rank-desc' ? 'selected' : ''}>排名降序</option>
-                            <option value="rank-asc" ${sortType === 'rank-asc' ? 'selected' : ''}>排名升序</option>
-                            <option value="time-desc" ${sortType === 'time-desc' ? 'selected' : ''}>时间降序</option>
-                            <option value="time-asc" ${sortType === 'time-asc' ? 'selected' : ''}>时间升序</option>
-                        </select>
-                    </div>
-                `;
+                        <div class="sub-header">
+                            <span class="sub-label">📌 已提交记录</span>
+                            <select class="sort-select" data-class="${className}">
+                                <option value="rank-desc" ${sortType === 'rank-desc' ? 'selected' : ''}>排名降序</option>
+                                <option value="rank-asc" ${sortType === 'rank-asc' ? 'selected' : ''}>排名升序</option>
+                                <option value="time-desc" ${sortType === 'time-desc' ? 'selected' : ''}>时间降序</option>
+                                <option value="time-asc" ${sortType === 'time-asc' ? 'selected' : ''}>时间升序</option>
+                            </select>
+                        </div>
+                    `;
 
                 if (sorted.length === 0) {
                     html += `<div style="font-size:12px;color:#94a3b8;padding:4px 0;">暂无记录</div>`;
@@ -1022,27 +1085,27 @@
                         const time = rec.time || '--';
                         const submitTime = formatTime(rec.submitted_at);
                         itemsHtml += `
-                            <div class="record-item">
-                                <span class="r-left">
-                                    <span class="r-rank">#${rank}</span>
-                                    <span class="r-name">${formatName(rec.name)}</span>
-                                </span>
-                                <span class="r-right">
-                                    <span class="r-score">${score}</span>
-                                    <span class="r-time">${time}</span>
-                                    <span class="r-submit-time">${submitTime}</span>
-                                </span>
-                            </div>
-                        `;
+                                <div class="record-item">
+                                    <span class="r-left">
+                                        <span class="r-rank">#${rank}</span>
+                                        <span class="r-name">${formatName(rec.name)}</span>
+                                    </span>
+                                    <span class="r-right">
+                                        <span class="r-score">${score}</span>
+                                        <span class="r-time">${time}</span>
+                                        <span class="r-submit-time">${submitTime}</span>
+                                    </span>
+                                </div>
+                            `;
                     }
                     // 如果超过5条，加入滚动容器和展开按钮
                     if (sorted.length > 5) {
                         html += `
-                            <div class="records-scroll" style="max-height: 140px; overflow-y: auto;">
-                                ${itemsHtml}
-                            </div>
-                            <button class="toggle-records-btn" data-expanded="false">展开全部</button>
-                        `;
+                                <div class="records-scroll" style="max-height: 140px; overflow-y: auto;">
+                                    ${itemsHtml}
+                                </div>
+                                <button class="toggle-records-btn" data-expanded="false">展开全部</button>
+                            `;
                     } else {
                         html += itemsHtml;
                     }
@@ -1059,8 +1122,8 @@
                 }
 
                 let gameSubs = data.submissions || [];
-                // 过滤 4班
-                gameSubs = gameSubs.filter(g => (g.class || '') !== '4班');
+                // ✅ 修改：显示4、5、6班，过滤掉7班（不显示7班）
+                gameSubs = gameSubs.filter(g => (g.class || '') !== '7班');
 
                 const uniqueGames = deduplicateBy(gameSubs, ['name', 'class']);
                 uniqueGames.sort((a, b) => new Date(b.submitted_at) - new Date(a.submitted_at));
@@ -1073,7 +1136,8 @@
                     const whiteData = await whiteRes.json();
                     whiteSubs = whiteData.submissions || [];
                 }
-                whiteSubs = whiteSubs.filter(w => (w.class || '') !== '4班');
+                // ✅ 修改：显示4、5、6班，过滤掉7班（不显示7班）
+                whiteSubs = whiteSubs.filter(w => (w.class || '') !== '7班');
 
                 const whiteSet = new Map();
                 const whiteList = [];
@@ -1178,20 +1242,20 @@
                         const rateDisplay = Math.round(cls.rate);
                         const missingList = cls.missing;
                         html += `
-                            <div class="class-card" data-class="${cls.className}">
-                                <div class="class-card-header">
-                                    <span class="class-name">📚 ${cls.className}</span>
-                                    <span class="class-rate">${rateDisplay}%</span>
-                                </div>
-                                <div class="class-meta">
-                                    已提交 <strong>${cls.submitted}</strong> 人 · 总人数 <strong>${cls.total}</strong> 人
-                                </div>
-                                <div class="progress-track">
-                                    <div class="progress-fill" style="width:${Math.min(cls.rate, 100)}%"></div>
-                                </div>
-                                <div class="missing-tags">
-                                    <span class="label">未提交：</span>
-                        `;
+                                <div class="class-card" data-class="${cls.className}">
+                                    <div class="class-card-header">
+                                        <span class="class-name">📚 ${cls.className}</span>
+                                        <span class="class-rate">${rateDisplay}%</span>
+                                    </div>
+                                    <div class="class-meta">
+                                        已提交 <strong>${cls.submitted}</strong> 人 · 总人数 <strong>${cls.total}</strong> 人
+                                    </div>
+                                    <div class="progress-track">
+                                        <div class="progress-fill" style="width:${Math.min(cls.rate, 100)}%"></div>
+                                    </div>
+                                    <div class="missing-tags">
+                                        <span class="label">未提交：</span>
+                            `;
                         if (missingList.length === 0) {
                             html += `<span class="all-done">✅ 全部提交</span>`;
                         } else {
@@ -1200,12 +1264,12 @@
                             }
                         }
                         html += `
+                                    </div>
+                                    <div class="submitted-records">
+                                        <!-- 由 renderClassRecords 填充 -->
+                                    </div>
                                 </div>
-                                <div class="submitted-records">
-                                    <!-- 由 renderClassRecords 填充 -->
-                                </div>
-                            </div>
-                        `;
+                            `;
                     }
                     classGridEl.innerHTML = html;
 
@@ -1440,10 +1504,12 @@
                 });
 
                 inputApiUrl.addEventListener('keydown', function(e) {
-                    if (e.key === 'Enter') { e.preventDefault(); inputGameName.focus(); }
+                    if (e.key === 'Enter') { e.preventDefault();
+                        inputGameName.focus(); }
                 });
                 inputGameName.addEventListener('keydown', function(e) {
-                    if (e.key === 'Enter') { e.preventDefault(); modalSubmit.click(); }
+                    if (e.key === 'Enter') { e.preventDefault();
+                        modalSubmit.click(); }
                 });
                 document.addEventListener('keydown', function(e) {
                     if (e.key === 'Escape' && modalOverlay.classList.contains('active')) {
