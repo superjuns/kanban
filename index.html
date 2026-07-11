@@ -1122,17 +1122,30 @@
                 }
 
                 let gameSubs = data.submissions || [];
-                // 统一字段名（兼容中文字段）
-                gameSubs = gameSubs.map(item => ({
-                    ...item,
-                    name: item.name || item['姓名'] || '',
-                    class: item.class || item['班级'] || '',
-                    score: item.score ?? item['得分'] ?? item['闯关数'] ?? item.correct ?? 0,
-                    time: item.time || item['用时'] || item['用时秒'] || '--',
-                    correct: item.correct ?? item['答对'] ?? 0
-                }));
+                // 统一字段名（兼容中文字段 + 班级格式规范化）
+                function normalizeClass(cls) {
+                    if (!cls) return '';
+                    const s = String(cls).trim();
+                    // 纯数字转成 "X班" 格式
+                    if (/^\d+$/.test(s)) return s + '班';
+                    return s;
+                }
+                gameSubs = gameSubs.map(item => {
+                    const rawClass = item.class || item['班级'] || '';
+                    return {
+                        ...item,
+                        name: item.name || item['姓名'] || '',
+                        class: normalizeClass(rawClass),
+                        score: item.score ?? item['得分'] ?? item['闯关数'] ?? item.correct ?? 0,
+                        time: item.time || item['用时'] || item['用时秒'] || '--',
+                        correct: item.correct ?? item['答对'] ?? 0
+                    };
+                });
                 // ✅ 修改：显示4、5、6班，过滤掉7班（不显示7班）
-                gameSubs = gameSubs.filter(g => (g.class || '') !== '7班');
+                gameSubs = gameSubs.filter(g => {
+                    const cls = g.class || '';
+                    return cls !== '7班' && cls !== '7';
+                });
 
                 const uniqueGames = deduplicateBy(gameSubs, ['name', 'class']);
                 uniqueGames.sort((a, b) => new Date(b.submitted_at) - new Date(a.submitted_at));
@@ -1146,15 +1159,21 @@
                     whiteSubs = whiteData.submissions || [];
                 }
                 // ✅ 修改：显示4、5、6班，过滤掉7班（不显示7班）
-                whiteSubs = whiteSubs.filter(w => (w.class || '') !== '7班');
+                // 白名单班级也做格式规范化，确保和游戏数据格式一致
+                whiteSubs = whiteSubs.filter(w => {
+                    const cls = normalizeClass(w.class || w['班级'] || '');
+                    return cls !== '7班' && cls !== '7';
+                });
 
                 const whiteSet = new Map();
                 const whiteList = [];
                 for (const w of whiteSubs) {
-                    const key = `${w.name || ''}|${w.class || ''}`;
+                    const wName = w.name || w['姓名'] || '';
+                    const wClass = normalizeClass(w.class || w['班级'] || '');
+                    const key = `${wName}|${wClass}`;
                     if (!whiteSet.has(key)) {
                         whiteSet.set(key, true);
-                        whiteList.push({ name: w.name || '', class: w.class || '' });
+                        whiteList.push({ name: wName, class: wClass });
                     }
                 }
 
