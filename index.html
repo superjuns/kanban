@@ -1122,6 +1122,15 @@
                 }
 
                 let gameSubs = data.submissions || [];
+                // 统一字段名（兼容中文字段）
+                gameSubs = gameSubs.map(item => ({
+                    ...item,
+                    name: item.name || item['姓名'] || '',
+                    class: item.class || item['班级'] || '',
+                    score: item.score ?? item['得分'] ?? item['闯关数'] ?? item.correct ?? 0,
+                    time: item.time || item['用时'] || item['用时秒'] || '--',
+                    correct: item.correct ?? item['答对'] ?? 0
+                }));
                 // ✅ 修改：显示4、5、6班，过滤掉7班（不显示7班）
                 gameSubs = gameSubs.filter(g => (g.class || '') !== '7班');
 
