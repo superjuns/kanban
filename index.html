@@ -993,8 +993,8 @@
                     const subs = data.submissions || [];
                     const gameMap = new Map();
                     for (const s of subs) {
-                        const apiUrl = s.api_url || s.data_link || '';
-                        const gameName = s.game_name || s.task_title || '未命名';
+                        const apiUrl = s.api_url || s.data_link || s.url || '';
+                        const gameName = s.game_name || s.task_title || s.name || '未命名';
                         if (apiUrl) {
                             const key = apiUrl;
                             if (!gameMap.has(key)) {
