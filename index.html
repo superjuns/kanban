@@ -976,16 +976,22 @@
                 return Array.from(map.values());
             }
 
+            // 获取北京时间的日期字符串（YYYY-MM-DD）
+            function getBeijingDateStr(date) {
+                const d = date || new Date();
+                // UTC+8
+                const beijing = new Date(d.getTime() + 8 * 60 * 60 * 1000);
+                return beijing.toISOString().slice(0, 10);
+            }
+
             function getTodayStr() {
-                const d = new Date();
-                return d.toISOString().slice(0, 10);
+                return getBeijingDateStr(new Date());
             }
 
             function formatDateDisplay(date) {
-                const y = date.getFullYear();
-                const m = String(date.getMonth() + 1).padStart(2, '0');
-                const d = String(date.getDate()).padStart(2, '0');
-                return `${y}-${m}-${d}`;
+                // 按北京时间显示日期
+                const ymd = getBeijingDateStr(date).split('-');
+                return `${ymd[0]}-${ymd[1]}-${ymd[2]}`;
             }
 
             function dateToStr(date) {
@@ -993,7 +999,9 @@
             }
 
             function cloneDate(date) {
-                return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+                // 基于北京时间克隆日期
+                const ymd = getBeijingDateStr(date).split('-').map(Number);
+                return new Date(ymd[0], ymd[1] - 1, ymd[2]);
             }
 
             function formatTime(submittedAt) {
@@ -1203,12 +1211,12 @@
                     }
                 }
 
-                // 先按日期筛选当天数据，再取每人最佳成绩
+                // 先按日期筛选当天数据（按北京时间判断），再取每人最佳成绩
                 let dailySubs = gameSubs;
                 if (dateStr) {
                     dailySubs = gameSubs.filter(g => {
                         if (!g.submitted_at) return false;
-                        const gDate = new Date(g.submitted_at).toISOString().slice(0, 10);
+                        const gDate = getBeijingDateStr(new Date(g.submitted_at));
                         return gDate === dateStr;
                     });
                 }
