@@ -954,6 +954,28 @@
                 return Array.from(map.values());
             }
 
+            // 按最佳成绩去重：分数高优先，分数相同用时短优先
+            function deduplicateByBest(arr, keys) {
+                const map = new Map();
+                for (const item of arr) {
+                    const key = keys.map(k => (item[k] ?? '')).join('|');
+                    if (!map.has(key)) {
+                        map.set(key, item);
+                    } else {
+                        const existing = map.get(key);
+                        const exScore = Number(existing.score ?? existing.correct ?? 0);
+                        const newScore = Number(item.score ?? item.correct ?? 0);
+                        const exTime = Number(existing.time) || Infinity;
+                        const newTime = Number(item.time) || Infinity;
+                        // 分数高优先；分数相同，用时短优先
+                        if (newScore > exScore || (newScore === exScore && newTime < exTime)) {
+                            map.set(key, item);
+                        }
+                    }
+                }
+                return Array.from(map.values());
+            }
+
             function getTodayStr() {
                 const d = new Date();
                 return d.toISOString().slice(0, 10);
@@ -1151,7 +1173,7 @@
                     return cls !== '7班' && cls !== '7';
                 });
 
-                const uniqueGames = deduplicateBy(gameSubs, ['name', 'class']);
+                const uniqueGames = deduplicateByBest(gameSubs, ['name', 'class']);
                 uniqueGames.sort((a, b) => new Date(b.submitted_at) - new Date(a.submitted_at));
                 currentSubmissions = uniqueGames;
 
@@ -1181,15 +1203,18 @@
                     }
                 }
 
-                // 按日期筛选游戏记录
-                let filteredGames = uniqueGames;
+                // 先按日期筛选当天数据，再取每人最佳成绩
+                let dailySubs = gameSubs;
                 if (dateStr) {
-                    filteredGames = uniqueGames.filter(g => {
+                    dailySubs = gameSubs.filter(g => {
                         if (!g.submitted_at) return false;
                         const gDate = new Date(g.submitted_at).toISOString().slice(0, 10);
                         return gDate === dateStr;
                     });
                 }
+                // 当天每人最佳成绩
+                const dailyBest = deduplicateByBest(dailySubs, ['name', 'class']);
+                const filteredGames = dailyBest;
 
                 // 构建记录映射 (name+class -> 记录)
                 const recordMap = new Map();
