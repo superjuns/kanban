@@ -1211,12 +1211,13 @@
                     }
                 }
 
-                // 先按日期筛选当天数据（按北京时间判断），再取每人最佳成绩
+                // 先按日期筛选当天数据（submitted_at 本身就是北京时间字符串，直接截取日期即可）
                 let dailySubs = gameSubs;
                 if (dateStr) {
                     dailySubs = gameSubs.filter(g => {
                         if (!g.submitted_at) return false;
-                        const gDate = getBeijingDateStr(new Date(g.submitted_at));
+                        // submitted_at 格式为 "2026-07-11 22:58:27"（北京时间），直接取前10位
+                        const gDate = String(g.submitted_at).slice(0, 10);
                         return gDate === dateStr;
                     });
                 }
