@@ -1131,14 +1131,18 @@
                     return s;
                 }
                 gameSubs = gameSubs.map(item => {
-                    const rawClass = item.class || item['班级'] || '';
+                    const rawClass = item.class || item['班级'] || item.className || item.class_name || '';
+                    const rawName = item.name || item['姓名'] || item.studentName || item.student_name || '';
+                    const rawScore = item.score ?? item['得分'] ?? item['闯关数'] ?? item.correct ?? item.correctCount ?? item.correct_answers ?? item.correctAnswers ?? 0;
+                    const rawTime = item.time || item['用时'] || item['用时秒'] || item.seconds || item.timeSeconds || item.totalTimeSeconds || item.total_time_seconds || '--';
+                    const rawCorrect = item.correct ?? item['答对'] ?? item.correctCount ?? item.correctAnswers ?? item.correct_answers ?? 0;
                     return {
                         ...item,
-                        name: item.name || item['姓名'] || '',
+                        name: rawName,
                         class: normalizeClass(rawClass),
-                        score: item.score ?? item['得分'] ?? item['闯关数'] ?? item.correct ?? 0,
-                        time: item.time || item['用时'] || item['用时秒'] || '--',
-                        correct: item.correct ?? item['答对'] ?? 0
+                        score: rawScore,
+                        time: rawTime,
+                        correct: rawCorrect
                     };
                 });
                 // ✅ 修改：显示4、5、6班，过滤掉7班（不显示7班）
