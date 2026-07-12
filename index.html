@@ -1188,10 +1188,10 @@
                         correct: rawCorrect
                     };
                 });
-                // ✅ 修改：显示4、5、6班，过滤掉7班（不显示7班）
+                // ✅ 修改：只显示4、5、6班，过滤其他班级
                 gameSubs = gameSubs.filter(g => {
                     const cls = g.class || '';
-                    return cls !== '7班' && cls !== '7';
+                    return cls === '4班' || cls === '5班' || cls === '6班' || cls === '4' || cls === '5' || cls === '6';
                 });
 
                 const uniqueGames = deduplicateByBest(gameSubs, ['name', 'class']);
@@ -1205,11 +1205,10 @@
                     const whiteData = await whiteRes.json();
                     whiteSubs = whiteData.submissions || [];
                 }
-                // ✅ 修改：显示4、5、6班，过滤掉7班（不显示7班）
-                // 白名单班级也做格式规范化，确保和游戏数据格式一致
+                // ✅ 修改：只显示4、5、6班，白名单也做对应过滤
                 whiteSubs = whiteSubs.filter(w => {
                     const cls = normalizeClass(w.class || w['班级'] || '');
-                    return cls !== '7班' && cls !== '7';
+                    return cls === '4班' || cls === '5班' || cls === '6班';
                 });
 
                 const whiteSet = new Map();
