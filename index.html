@@ -979,9 +979,17 @@
             // 获取北京时间的日期字符串（YYYY-MM-DD）
             function getBeijingDateStr(date) {
                 const d = date || new Date();
-                // UTC+8
-                const beijing = new Date(d.getTime() + 8 * 60 * 60 * 1000);
-                return beijing.toISOString().slice(0, 10);
+                // 使用 Intl 正确获取北京时间日期
+                const parts = new Intl.DateTimeFormat('en-CA', {
+                    timeZone: 'Asia/Shanghai',
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit'
+                }).formatToParts(d);
+                const y = parts.find(p => p.type === 'year')?.value;
+                const m = parts.find(p => p.type === 'month')?.value;
+                const day = parts.find(p => p.type === 'day')?.value;
+                return `${y}-${m}-${day}`;
             }
 
             function getTodayStr() {
@@ -999,8 +1007,9 @@
             }
 
             function cloneDate(date) {
-                // 基于北京时间克隆日期
+                // 基于北京时间克隆日期，返回当天0点的Date对象（北京时间）
                 const ymd = getBeijingDateStr(date).split('-').map(Number);
+                // 构造一个"看起来像"北京时间的日期对象（用本地时间模拟）
                 return new Date(ymd[0], ymd[1] - 1, ymd[2]);
             }
 
