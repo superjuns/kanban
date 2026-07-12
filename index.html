@@ -978,18 +978,22 @@
 
             // 获取北京时间的日期字符串（YYYY-MM-DD）
             function getBeijingDateStr(date) {
-                const d = date || new Date();
-                // 使用 Intl 正确获取北京时间日期
-                const parts = new Intl.DateTimeFormat('en-CA', {
+                var d = date || new Date();
+                // 使用 Intl 正确获取北京时间日期，兼容旧浏览器
+                var fmt = new Intl.DateTimeFormat('en-CA', {
                     timeZone: 'Asia/Shanghai',
                     year: 'numeric',
                     month: '2-digit',
                     day: '2-digit'
-                }).formatToParts(d);
-                const y = parts.find(p => p.type === 'year')?.value;
-                const m = parts.find(p => p.type === 'month')?.value;
-                const day = parts.find(p => p.type === 'day')?.value;
-                return `${y}-${m}-${day}`;
+                });
+                var parts = fmt.formatToParts(d);
+                var y = '', m = '', day = '';
+                for (var i = 0; i < parts.length; i++) {
+                    if (parts[i].type === 'year') y = parts[i].value;
+                    if (parts[i].type === 'month') m = parts[i].value;
+                    if (parts[i].type === 'day') day = parts[i].value;
+                }
+                return y + '-' + m + '-' + day;
             }
 
             function getTodayStr() {
