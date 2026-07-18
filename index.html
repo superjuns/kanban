@@ -895,6 +895,30 @@
             const WHITELIST_API = 'https://wzkjgz.site/api/5tmbx2o6rg/all';  // ✅ 已更新白名单API
             const REFRESH_INTERVAL = 10; // 秒
 
+            // 游戏列表API中的 api_url 存的是 GitHub Pages 地址，
+            // 看板需要用数据API地址来拉取提交记录，这里做映射
+            const GAME_DATA_API_MAP = {
+                'https://superjuns.github.io/qiqiaoban/':       'https://wzkjgz.site/api/6frl7m3zlw',
+                'https://superjuns.github.io/liesuanshi/':      'https://wzkjgz.site/api/x0joelczoy',
+                'https://superjuns.github.io/shishu/':          'https://wzkjgz.site/api/6pwvws38id',
+                'https://superjuns.github.io/zhezhi-gongfang/': 'https://wzkjgz.site/api/08uh42ddft',
+                'https://superjuns.github.io/lianhuanhua/':     'https://wzkjgz.site/api/qp2q80fahw',
+                'https://superjuns.github.io/tuxingshushu/':    'https://wzkjgz.site/api/vylw99t9pn',
+                'https://superjuns.github.io/chengfa-yure/':    'https://wzkjgz.site/api/3on5m3kfyb',
+                'https://superjuns.github.io/bianshi/':         'https://wzkjgz.site/api/ic80kof9jq',
+                'https://superjuns.github.io/huochai-suanshi/': 'https://wzkjgz.site/api/dvr2frebwx',
+                'https://superjuns.github.io/bahe/':            'https://wzkjgz.site/api/sc37wirvgg',
+                'https://superjuns.github.io/jisuan/':          'https://wzkjgz.site/api/86zpbmecar',
+                'https://superjuns.github.io/coushu/':         'https://wzkjgz.site/api/ez1m8p37tv',
+            };
+
+            function resolveDataApi(apiUrl) {
+                // 如果已经是 wzkjgz.site/api/ 地址，直接用
+                if (apiUrl && apiUrl.includes('wzkjgz.site/api/')) return apiUrl;
+                // 否则查映射表
+                return GAME_DATA_API_MAP[apiUrl] || null;
+            }
+
             // ---------- DOM ----------
             const totalStudentsEl = document.getElementById('totalStudents');
             const submittedCountEl = document.getElementById('submittedCount');
@@ -1036,8 +1060,10 @@
                     const subs = data.submissions || [];
                     const gameMap = new Map();
                     for (const s of subs) {
-                        const apiUrl = s.api_url || s.data_link || s.url || '';
+                        const rawUrl = s.api_url || s.data_link || s.url || '';
                         const gameName = s.game_name || s.task_title || s.name || '未命名';
+                        // 将 GitHub Pages 地址映射为数据API地址
+                        const apiUrl = resolveDataApi(rawUrl);
                         if (apiUrl) {
                             const key = apiUrl;
                             if (!gameMap.has(key)) {
