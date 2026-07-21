@@ -886,35 +886,52 @@
     </div>
 
     <script>
+// === Supabase 配置（自动生成）===
+const SUPABASE_KEY = 'sb_publishable_EAfnJgOY7VsXPdZkEcrvBA_0qkNGlyD';
+const _origFetch = window.fetch;
+window.fetch = function(url, options) {
+    options = options || {};
+    var u = (typeof url === 'string') ? url : (url && url.url) || '';
+    if (u.indexOf('bjugehxenrvaqtodjkbc.supabase.co') !== -1) {
+        options.headers = Object.assign({}, options.headers || {}, {
+            'apikey': SUPABASE_KEY,
+            'Authorization': 'Bearer ' + SUPABASE_KEY,
+            'Content-Type': 'application/json'
+        });
+    }
+    return _origFetch.call(this, url, options);
+};
+// === Supabase 配置结束 ===
+
         (function() {
             'use strict';
 
             // ---------- 配置 ----------
-            const GAME_LIST_API = 'https://wzkjgz.site/api/9d5osbhmxw/all';
-            const GAME_POST_API = 'https://wzkjgz.site/api/9d5osbhmxw';
-            const WHITELIST_API = 'https://wzkjgz.site/api/5tmbx2o6rg/all';  // ✅ 已更新白名单API
+            const GAME_LIST_API = 'https://bjugehxenrvaqtodjkbc.supabase.co/rest/v1/games_list?select=*';
+            const GAME_POST_API = 'https://bjugehxenrvaqtodjkbc.supabase.co/rest/v1/games_list';
+            const WHITELIST_API = 'https://bjugehxenrvaqtodjkbc.supabase.co/rest/v1/whitelist?select=*';  // ✅ 已更新白名单API
             const REFRESH_INTERVAL = 10; // 秒
 
             // 游戏列表API中的 api_url 存的是 GitHub Pages 地址，
             // 看板需要用数据API地址来拉取提交记录，这里做映射
             const GAME_DATA_API_MAP = {
-                'https://superjuns.github.io/qiqiaoban/':       'https://wzkjgz.site/api/6frl7m3zlw',
-                'https://superjuns.github.io/liesuanshi/':      'https://wzkjgz.site/api/x0joelczoy',
-                'https://superjuns.github.io/shishu/':          'https://wzkjgz.site/api/6pwvws38id',
-                'https://superjuns.github.io/zhezhi-gongfang/': 'https://wzkjgz.site/api/08uh42ddft',
-                'https://superjuns.github.io/lianhuanhua/':     'https://wzkjgz.site/api/qp2q80fahw',
-                'https://superjuns.github.io/tuxingshushu/':    'https://wzkjgz.site/api/vylw99t9pn',
-                'https://superjuns.github.io/chengfa/':          'https://wzkjgz.site/api/3on5m3kfyb',
-                'https://superjuns.github.io/bianshi/':         'https://wzkjgz.site/api/ic80kof9jq',
-                'https://superjuns.github.io/huochai-suanshi/': 'https://wzkjgz.site/api/dvr2frebwx',
-                'https://superjuns.github.io/bahe/':            'https://wzkjgz.site/api/sc37wirvgg',
-                'https://superjuns.github.io/jisuan/':          'https://wzkjgz.site/api/86zpbmecar',
-                'https://superjuns.github.io/coushu/':         'https://wzkjgz.site/api/ez1m8p37tv',
+                'https://superjuns.github.io/qiqiaoban/':       'https://bjugehxenrvaqtodjkbc.supabase.co/rest/v1/scores_qiqiaoban',
+                'https://superjuns.github.io/liesuanshi/':      'https://bjugehxenrvaqtodjkbc.supabase.co/rest/v1/scores_liesuanshi',
+                'https://superjuns.github.io/shishu/':          'https://bjugehxenrvaqtodjkbc.supabase.co/rest/v1/scores_shishu',
+                'https://superjuns.github.io/zhezhi-gongfang/': 'https://bjugehxenrvaqtodjkbc.supabase.co/rest/v1/scores_zhezhi',
+                'https://superjuns.github.io/lianhuanhua/':     'https://bjugehxenrvaqtodjkbc.supabase.co/rest/v1/scores_lianhuanhua',
+                'https://superjuns.github.io/tuxingshushu/':    'https://bjugehxenrvaqtodjkbc.supabase.co/rest/v1/scores_tuxingshushu',
+                'https://superjuns.github.io/chengfa/':          'https://bjugehxenrvaqtodjkbc.supabase.co/rest/v1/scores_chengfa',
+                'https://superjuns.github.io/bianshi/':         'https://bjugehxenrvaqtodjkbc.supabase.co/rest/v1/scores_bianshi_offline',
+                'https://superjuns.github.io/huochai-suanshi/': 'https://bjugehxenrvaqtodjkbc.supabase.co/rest/v1/scores_huochai',
+                'https://superjuns.github.io/bahe/':            'https://bjugehxenrvaqtodjkbc.supabase.co/rest/v1/scores_bahe',
+                'https://superjuns.github.io/jisuan/':          'https://bjugehxenrvaqtodjkbc.supabase.co/rest/v1/scores_meiriyilian',
+                'https://superjuns.github.io/coushu/':         'https://bjugehxenrvaqtodjkbc.supabase.co/rest/v1/scores_coushu',
             };
 
             function resolveDataApi(apiUrl) {
-                // 如果已经是 wzkjgz.site/api/ 地址，直接用
-                if (apiUrl && apiUrl.includes('wzkjgz.site/api/')) return apiUrl;
+                // 如果已经是 Supabase 地址，直接用
+                if (apiUrl && apiUrl.includes('bjugehxenrvaqtodjkbc.supabase.co')) return apiUrl;
                 // 否则查映射表
                 return GAME_DATA_API_MAP[apiUrl] || null;
             }
@@ -1057,7 +1074,7 @@
                     const res = await fetch(GAME_LIST_API);
                     if (!res.ok) throw new Error('获取游戏列表失败');
                     const data = await res.json();
-                    const subs = data.submissions || [];
+                    const subs = data || [];
                     const gameMap = new Map();
                     for (const s of subs) {
                         const rawUrl = s.api_url || s.data_link || s.url || '';
@@ -1190,7 +1207,7 @@
                     return;
                 }
 
-                let gameSubs = data.submissions || [];
+                let gameSubs = data || [];
                 // 统一字段名（兼容中文字段 + 班级格式规范化）
                 function normalizeClass(cls) {
                     if (!cls) return '';
@@ -1229,7 +1246,7 @@
                 let whiteSubs = [];
                 if (whiteRes.ok) {
                     const whiteData = await whiteRes.json();
-                    whiteSubs = whiteData.submissions || [];
+                    whiteSubs = whiteData || [];
                 }
                 // ✅ 修改：只过滤7班（老师测试号），白名单保留1-6班学生
                 whiteSubs = whiteSubs.filter(w => {
